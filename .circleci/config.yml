@@ -49,10 +49,6 @@ jobs:
 
 workflows:
   terraform:
-    build:
-      branches:
-        only:
-          - master
     jobs:
       - stag_terraform_dry_run:
           context: AWS_STAG
