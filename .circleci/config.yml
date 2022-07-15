@@ -1,0 +1,56 @@
+version: 2.1
+
+orbs:
+   aws-cli: circleci/aws-cli@3.1.1
+
+commands:
+  install_dependencies:
+    steps:
+      - checkout:
+          path: ~/project0
+      # install terraform
+      - run: curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+      - run: sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+      - run: sudo apt-get update && sudo apt-get install terraform
+      # install terragrunt
+      - run: wget https://github.com/gruntwork-io/terragrunt/releases/download/$(curl --silent GET https://api.github.com/repos/gruntwork-io/terragrunt/releases/latest | jq -r .tag_name)/terragrunt_linux_amd64 -O terragrunt
+      - run: sudo chmod u+x terragrunt
+      - run: sudo mv terragrunt /usr/local/bin/terragrunt
+      # verify
+      - run: terraform --version
+      - run: terragrunt --version
+  terragrunt_plan:
+    steps:
+      - run: terragrunt init
+      - run: terragrunt plan
+
+jobs:
+  stag_terraform_dry_run:
+    working_directory: ~/project0/terraform/providers/aws/stag
+    docker:
+      - image: "cimg/python:3.9"
+    steps:
+      - install_dependencies
+      - aws-cli/setup:
+          profile-name: staging
+          aws-region: AWS_REGION
+      # - terragrunt_plan
+
+  prod_terraform_dry_run:
+    working_directory: ~/project0/terraform/providers/aws/prod
+    docker:
+      - image: "cimg/python:3.9"
+    steps:
+      - install_dependencies
+      - aws-cli/setup:
+          profile-name: production
+          aws-region: AWS_REGION
+      # - terragrunt_plan
+
+workflows:
+  terraform:
+    jobs:
+      - stag_terraform_dry_run:
+          context: AWS_STAG
+      - prod_terraform_dry_run:
+          context: AWS_PROD
