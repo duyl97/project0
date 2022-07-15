@@ -34,7 +34,7 @@ jobs:
       - aws-cli/setup:
           profile-name: staging
           aws-region: AWS_REGION
-      - terragrunt_plan
+      # - terragrunt_plan
 
   prod_terraform_dry_run:
     working_directory: ~/project0/terraform/providers/aws/prod
@@ -45,7 +45,7 @@ jobs:
       - aws-cli/setup:
           profile-name: production
           aws-region: AWS_REGION
-      - terragrunt_plan
+      # - terragrunt_plan
 
 workflows:
   terraform:
