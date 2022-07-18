@@ -48,9 +48,14 @@ jobs:
       # - terragrunt_plan
 
 workflows:
-  terraform:
+  on_feature_commit:
     jobs:
       - stag_terraform_dry_run:
           context: AWS_STAG
+  on_merging_into_master:
+    jobs:
       - prod_terraform_dry_run:
           context: AWS_PROD
+          filters:
+            branches:
+              only: master
